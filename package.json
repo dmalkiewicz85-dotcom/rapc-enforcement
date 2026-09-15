@@ -1,0 +1,32 @@
+{
+  "name": "rapc-enforcement",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "24.x" },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint --max-warnings 0",
+    "test": "node --test \"lib/**/*.test.js\"",
+    "google:authorize": "node scripts/google-authorize.mjs",
+    "sheets:init": "node scripts/init-sheets.mjs"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "googleapis": "^144.0.0",
+    "lucide-react": "^0.468.0",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "dotenv": "^16.4.7",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.1.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17"
+  }
+}
