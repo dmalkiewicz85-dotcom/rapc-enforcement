@@ -36,10 +36,12 @@ app/                 Next.js routes. Server components read via lib/*, never cal
   api/violations/[id]/compliance POST {notes} — Mark Compliant
   api/notices/preview?event=  GET PDF from live data · api/notices/sample?fine=  GET layout check
   api/recurring      POST schedule due recurring fines
+  api/notices/retry  POST {eventId} — resend EMAIL_FAILED/manual from the filed PDF, or file if missing
+  api/fines/email    POST — email the PM report from the HOA account and mark SENT_TO_PM
   api/fines/report?format=xlsx|csv · api/fines/sent POST · api/fines/[id] PATCH include|status
   api/admin/settings PATCH · api/admin/rules/[id] PATCH · api/admin/steps/[id] PATCH · api/admin/users POST
   page.jsx           dashboard          violations/ properties/ approvals/ fines/ admin/
-components/          Sidebar, ActingAs, RosterImport, NewViolationForm, ApprovalCard, MarkCompliant, FinesQueue, AdminConfig
+components/          Sidebar, ActingAs, RosterImport, NewViolationForm, ApprovalCard, MarkCompliant, FinesQueue, AdminConfig, NoticeActions
 lib/
   schema.js          TABS: every sheet tab + exact headers; enums; PERMISSIONS + can()
   seed.js            nine rules and their steps, first user, HOA settings — written once by sheets:init
@@ -55,7 +57,9 @@ lib/
   properties.js      loadProperties / loadProperty joined with owners, ownerships, cases
   violations.js      buildDetermination (pure) · submitViolation (writeSteps) · loadViolation(s)
   approvals.js       planDecision / planCompliance (pure, tested) · decideEvent / confirmCompliance
-  notices.js         afterApproval() — the seam Phases 7–8 fill (Drive → Gmail → NOTICES)
+  notices.js         afterApproval: PDF → Drive → NOTICES → Gmail; noticeReadiness; retryNotice
+  drive.js           uploadPdf / downloadFile into GOOGLE_DRIVE_FOLDER_ID
+  gmail.js           sendMail (hand-built MIME, attachments), fillTemplate {placeholders}
   letter.js          buildLetterModel — pure; refuses while any input is NEEDS_BOARD_INPUT
   pdf.js             renderNoticePdf — pdf-lib reproduction of the template, 2 pages
   letter-sample.js   clearly-marked sample data for /api/notices/sample
@@ -122,7 +126,9 @@ drops the case back to its last approved step). Overrides can only pick steps th
 RULE_ENFORCEMENT_STEPS — the Board never types an action or an amount that isn't configured,
 except a fine modification, which is audited as FINE_MODIFIED.
 No email is sent on submission. Events are created `PENDING_BOARD_APPROVAL`; approval
-generates the PDF → Drive → Gmail → NOTICES row with message id. Recurring fines also enter
+generates the PDF → Drive → Gmail → NOTICES row with message id. `decideEvent` runs
+`noticeReadiness` **before** writing anything and refuses the approval while letter/email inputs
+are NEEDS_BOARD_INPUT or GOOGLE_DRIVE_FOLDER_ID is unset. Recurring fines also enter
 pending. Owner with no email → `MANUAL_DELIVERY_REQUIRED`. Gmail failure → `EMAIL_FAILED` +
 retry, never a duplicate event or fine.
 
@@ -161,6 +167,6 @@ must be set for Production, Preview, and Development.
 ## Build phases (spec BUILD SEQUENCE)
 1 ✅ schema, roles, acting-as · 2 ✅ roster import + ownership · 3 ✅ (+ admin UI) rules config + engine ·
 4 ✅ violation submission + dashboard · 5 ✅ approval workflow · 6 ✅ warning PDF ·
-7 Drive · 8 Gmail · 9 ✅ compliance + recurring fines · 10 ✅ PM reporting (send-by-email pending Gmail) · 11 audit/security/tests ·
+7 ✅ Drive · 8 ✅ Gmail (both written, **not yet exercised against a real account**) · 9 ✅ compliance + recurring fines · 10 ✅ PM reporting · 11 audit/security/tests ·
 12 final-warning template. Template field map is in `lib/letter.js`; the received "Final Notice
 Before Collections" PDF is a dues letter, not a violation final warning (TODO item G).

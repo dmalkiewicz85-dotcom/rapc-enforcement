@@ -4,6 +4,7 @@ import { loadViolation } from '@/lib/violations'
 import { currentUser } from '@/lib/current-user'
 import { can } from '@/lib/schema'
 import MarkCompliant from '@/components/MarkCompliant'
+import NoticeActions from '@/components/NoticeActions'
 import { formatDate, formatDateTime } from '@/lib/time'
 import { ordinal, money } from '@/lib/format'
 
@@ -21,6 +22,9 @@ export default async function Page({ params }) {
   const [v, user] = await Promise.all([loadViolation(id), currentUser()])
   if (!v) notFound()
   const pendingCount = v.events.filter(e => e.status === 'PENDING_BOARD_APPROVAL').length
+  const approver = can(user, 'approve_enforcement')
+  // Approved, letter-bearing events with no NOTICES row: approval was interrupted before filing.
+  const unfiled = v.events.filter(e => e.status === 'APPROVED' && e.event_type !== 'MANUAL_ACTION' && !v.notices.some(n => n.enforcement_event_id === e.id))
 
   return (
     <div className="space-y-6">
@@ -119,13 +123,31 @@ export default async function Page({ params }) {
         )}
       </section>
 
-      {(v.notices.length > 0 || v.fines.length > 0) && (
+      {(v.notices.length > 0 || v.fines.length > 0 || unfiled.length > 0) && (
         <div className="grid gap-6 lg:grid-cols-2">
           <section className="card">
             <h2 className="label">Notices</h2>
-            {v.notices.length === 0 ? <p className="text-sm text-ink-500">None yet.</p> : (
-              <ul className="text-sm space-y-1">
-                {v.notices.map(n => <li key={n.id}>{n.template_type} · {n.status} · {n.sent_at ? `sent ${formatDateTime(n.sent_at)} to ${n.recipient_email}` : `generated ${formatDateTime(n.generated_at)}`}</li>)}
+            {v.notices.length === 0 && unfiled.length === 0 ? <p className="text-sm text-ink-500">None yet.</p> : (
+              <ul className="text-sm space-y-2">
+                {v.notices.map(n => (
+                  <li key={n.id} className="flex flex-wrap items-center gap-2">
+                    <span>
+                      {n.template_type.replace(/_/g, ' ')} · <span className="font-semibold">{n.status.replace(/_/g, ' ')}</span>
+                      {n.sent_at ? ` · sent ${formatDateTime(n.sent_at)} to ${n.recipient_email}` : ` · generated ${formatDateTime(n.generated_at)}`}
+                      {n.error && <span className="text-red-700"> · {n.error}</span>}
+                    </span>
+                    {n.google_drive_file_id && <a href={`https://drive.google.com/file/d/${n.google_drive_file_id}/view`} target="_blank" rel="noreferrer" className="underline">Drive</a>}
+                    {approver && ['EMAIL_FAILED', 'MANUAL_DELIVERY_REQUIRED'].includes(n.status) && (
+                      <NoticeActions eventId={n.enforcement_event_id} label={n.status === 'EMAIL_FAILED' ? 'Retry email' : 'Try email again'} />
+                    )}
+                  </li>
+                ))}
+                {unfiled.map(e => (
+                  <li key={e.id} className="flex flex-wrap items-center gap-2 text-amber-900">
+                    <span>Step {e.step_number} approved but no notice was filed.</span>
+                    {approver && <NoticeActions eventId={e.id} label="Generate and send" />}
+                  </li>
+                ))}
               </ul>
             )}
           </section>

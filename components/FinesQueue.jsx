@@ -37,8 +37,12 @@ export default function FinesQueue({ pending, sent, done, canManage, canUpdateSt
               <a href="/api/fines/report?format=xlsx" download className="btn-secondary"><Download size={16} /> Excel</a>
               <a href="/api/fines/report?format=csv" download className="btn-secondary"><Download size={16} /> CSV</a>
               <button className="btn-primary" disabled={busy || included.length === 0}
-                onClick={() => { if (confirm(`Record ${included.length} fine(s) as sent to Property Management?`)) call('/api/fines/sent', 'POST', { fineIds: included.map(f => f.id) }) }}>
-                <Send size={16} /> Mark {included.length} sent to PM
+                onClick={() => { if (confirm(`Email the report with ${included.length} fine(s) to Property Management from the HOA account?`)) call('/api/fines/email', 'POST', {}) }}>
+                <Send size={16} /> Email report to PM ({included.length})
+              </button>
+              <button className="btn-secondary" disabled={busy || included.length === 0}
+                onClick={() => { if (confirm(`Record ${included.length} fine(s) as sent to Property Management without emailing?`)) call('/api/fines/sent', 'POST', { fineIds: included.map(f => f.id) }) }}>
+                Mark sent (sent another way)
               </button>
             </div>
           )}
@@ -52,7 +56,7 @@ export default function FinesQueue({ pending, sent, done, canManage, canUpdateSt
             </label>
           )} />
         <p className="mt-2 text-xs text-ink-500">
-          Workflow: download the report → review → send to Property Management → mark sent. Emailing the report from the HOA account arrives with the Gmail integration.
+          Workflow: download and review the report, then email it to Property Management from the HOA account (or mark it sent if delivered another way). Nothing goes to PM automatically.
         </p>
       </section>
 
