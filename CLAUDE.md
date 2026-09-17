@@ -30,6 +30,7 @@ language.** Unknowns are seeded as `NEEDS_BOARD_INPUT` and tracked in `docs/TODO
 ```
 app/                 Next.js routes. Server components read via lib/*, never call Google directly
   api/health         config check      api/acting-as   pre-go-live user picker
+  api/roster         POST multipart file, mode=preview|apply (Board Admin only)
   page.jsx           dashboard          violations/ properties/ approvals/ fines/ admin/
 components/          Sidebar (role-filtered nav), ActingAs
 lib/
@@ -42,6 +43,9 @@ lib/
   time.js            America/Detroit date helpers; store UTC ISO, display Eastern
   current-user.js    cookie-backed "acting as" until sign-in exists
   dashboard.js       loadDashboard + deriveDashboard
+  roster.js          parseRoster + planRosterImport — pure, tested
+  roster-import.js   xlsx → previewRoster / applyRoster (writeSteps)
+  properties.js      loadProperties / loadProperty joined with owners, ownerships, cases
 scripts/
   google-authorize.mjs   one-time refresh-token flow
   init-sheets.mjs        create tabs, verify headers, seed empty config tabs
@@ -98,7 +102,10 @@ retry, never a duplicate event or fine.
 ### Snapshots are immutable
 VIOLATIONS stores `owner_*_snapshot` at creation. Historical notices render from the snapshot,
 never from the current roster. Nothing in enforcement history is ever deleted; roster imports
-end ownerships and close their open cases but preserve every row.
+end ownerships and close their open cases but preserve every row. On an ownership change the
+old owner's pending events are CANCELLED and fines not yet sent to PM are WAIVED (Board decision,
+Sept 2026) so the new owner never receives a notice or fine for the previous owner's conduct;
+fines already SENT_TO_PM/ASSESSED are left as the old owner's.
 
 ### Permissions are checked twice
 `can(user, action, settings)` in `lib/schema.js` gates both the UI (hide the button) and the
@@ -125,7 +132,7 @@ Push `dev` → Vercel preview; merge to `main` → production. Env vars listed i
 must be set for Production, Preview, and Development.
 
 ## Build phases (spec BUILD SEQUENCE)
-1 ✅ schema, roles, acting-as · 2 roster import + ownership · 3 ✅ rules config + engine ·
+1 ✅ schema, roles, acting-as · 2 ✅ roster import + ownership · 3 ✅ rules config + engine ·
 4 violation submission + dashboard (dashboard ✅) · 5 approval workflow · 6 warning PDF ·
 7 Drive · 8 Gmail · 9 compliance + recurring fines · 10 PM reporting · 11 audit/security/tests ·
 12 final-warning template. Inspect `docs/templates/*.pdf` and map every field before Phase 6.

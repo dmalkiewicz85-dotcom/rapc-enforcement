@@ -16,7 +16,11 @@ Items the app cannot proceed on without a decision or data. Nothing here is gues
    tab, remove the picker.
 
 ## Data
-8. **Sample HOA roster** (CSV/XLSX) with real column headers, for the import validator.
+8. ~~Sample HOA roster~~ **Received** — "CO-OWNER DIRECTORY as of 4-30-26" (.xlsx): two title rows,
+   then `Unit Address | Unit/Lot # | Name | Phone | Email`. Board decisions (Sept 2026): Unit/Lot #
+   is ignored; all listed emails are kept and notices go to every one; the unit address is the
+   mailing address; owner name is stored verbatim. Still needed: **`HOA_SETTINGS.property_zip`**
+   (the ZIP for the subdivision) so owner mailing addresses are complete for notices.
 9. **Initial users** beyond Leslie Childress-Cooper (Board Admin): names, emails, roles.
    Leslie's email is blank in the seed — needed before login can match her.
 
