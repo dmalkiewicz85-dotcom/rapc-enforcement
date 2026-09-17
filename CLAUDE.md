@@ -34,6 +34,7 @@ app/                 Next.js routes. Server components read via lib/*, never cal
   api/violations     POST submit · api/violations/determine POST preview (can 'submit')
   api/events/[id]/decide        POST {action, reason, fineAmount?, deadline?, stepNumber?}
   api/violations/[id]/compliance POST {notes} — Mark Compliant
+  api/notices/preview?event=  GET PDF from live data · api/notices/sample?fine=  GET layout check
   page.jsx           dashboard          violations/ properties/ approvals/ fines/ admin/
 components/          Sidebar, ActingAs, RosterImport, NewViolationForm, ApprovalCard, MarkCompliant
 lib/
@@ -51,7 +52,10 @@ lib/
   properties.js      loadProperties / loadProperty joined with owners, ownerships, cases
   violations.js      buildDetermination (pure) · submitViolation (writeSteps) · loadViolation(s)
   approvals.js       planDecision / planCompliance (pure, tested) · decideEvent / confirmCompliance
-  notices.js         afterApproval() — the seam Phases 6–8 fill (PDF → Drive → Gmail → NOTICES)
+  notices.js         afterApproval() — the seam Phases 7–8 fill (Drive → Gmail → NOTICES)
+  letter.js          buildLetterModel — pure; refuses while any input is NEEDS_BOARD_INPUT
+  pdf.js             renderNoticePdf — pdf-lib reproduction of the template, 2 pages
+  letter-sample.js   clearly-marked sample data for /api/notices/sample
 scripts/
   google-authorize.mjs   one-time refresh-token flow
   init-sheets.mjs        create tabs, verify headers, seed empty config tabs
@@ -152,4 +156,5 @@ must be set for Production, Preview, and Development.
 1 ✅ schema, roles, acting-as · 2 ✅ roster import + ownership · 3 ✅ rules config + engine ·
 4 ✅ violation submission + dashboard · 5 ✅ approval workflow · 6 warning PDF ·
 7 Drive · 8 Gmail · 9 compliance ✅ + recurring fines · 10 PM reporting · 11 audit/security/tests ·
-12 final-warning template. Inspect `docs/templates/*.pdf` and map every field before Phase 6.
+12 final-warning template. Template field map is in `lib/letter.js`; the received "Final Notice
+Before Collections" PDF is a dues letter, not a violation final warning (TODO item G).

@@ -28,12 +28,31 @@ Items the app cannot proceed on without a decision or data. Nothing here is gues
 - A. Governing-document reference for each of the nine rules → `VIOLATION_RULES.governing_document/section`
 - B. Exact governing-document text for each rule → `VIOLATION_RULES.governing_text`
 - C. Board-approved corrective-action language per rule → `VIOLATION_RULES.corrective_action_text`
-- D. Management company name, address, manager name/email → `HOA_SETTINGS`
+- D. Management company name, address, manager name/email → `HOA_SETTINGS`; optional
+  `management_company_tagline` (the template prints "An Accredited Association Management
+  Company®" under the response form — only printed if set)
 - E. Manager signature and/or logo image → Drive, IDs into `HOA_SETTINGS`
 - F. Property Management recipient email for PM reports → `HOA_SETTINGS.pm_report_recipient_email`
-- G. Final-warning template — **received**: `docs/templates/TEMPLATE - IRM Final Notice Before Collections.pdf`
+- G. Final-warning template — the file received (`TEMPLATE - IRM Final Notice Before Collections.pdf`)
+  is a **dues-collection letter** ([TotalAmountDue], [AccountNumber], payment methods), not a
+  violation final warning, so it cannot be mapped. Until the Board supplies a violation
+  final-warning letter, FINAL_WARNING renders on the standard notice layout.
 - H. Approved email subject and body → `HOA_SETTINGS.notice_email_subject/body`
 - I. Extra placeholders found in the final-warning template (inspect in Phase 12)
+
+## Approved letter text that conflicts with configuration (Board to resolve)
+The standard notice is reproduced verbatim (spec: do not redesign). Two sentences in it disagree
+with how the Board configured enforcement; the app prints them as written and puts the real
+deadline in the action block above them:
+- "**Within 14 days**, please email [ManagerEmail]…" — the configured deadlines are 7, 14, or 30
+  days (or Board-set). Consider "Within the compliance period stated above".
+- "…after violation closure, there may be a **12-month monitored period** in which another
+  offense … will result in the violation being reopened and automatically progressed" — the
+  Board set `reset_on_compliance=Y`, under which a new offense after closure is a first offense.
+- The fine box lists Courtesy / $25 / $50 / $100; Noise carries $75 and $150. The app ticks the
+  matching box or adds the actual amount as an extra checked line.
+- The letter opens "This is a friendly reminder…" on every offense level. If second/third
+  notices should read differently, that is the FINAL_WARNING template (item G).
 
 All of these are seeded as `NEEDS_BOARD_INPUT` and the letter engine will refuse to generate a
 notice while any required one is still a placeholder.

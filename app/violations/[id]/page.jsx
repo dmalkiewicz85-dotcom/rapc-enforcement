@@ -86,6 +86,7 @@ export default async function Page({ params }) {
                 <th className="px-4 py-2">Status</th>
                 <th className="px-4 py-2">Created</th>
                 <th className="px-4 py-2">Approved</th>
+                <th className="px-4 py-2">Notice</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-ink-200">
@@ -100,6 +101,11 @@ export default async function Page({ params }) {
                     <td className="px-4 py-2"><span className={`rounded px-2 py-0.5 text-xs font-semibold ${cls}`}>{label}</span></td>
                     <td className="px-4 py-2 text-ink-600">{formatDateTime(e.created_at)}</td>
                     <td className="px-4 py-2 text-ink-600">{e.approved_at ? formatDateTime(e.approved_at) : ''}</td>
+                    <td className="px-4 py-2">
+                      {e.event_type !== 'MANUAL_ACTION' && !['CANCELLED', 'REJECTED'].includes(e.status) && (
+                        <a href={`/api/notices/preview?event=${e.id}`} target="_blank" rel="noreferrer" className="underline">Preview PDF</a>
+                      )}
+                    </td>
                   </tr>
                 )
               })}
