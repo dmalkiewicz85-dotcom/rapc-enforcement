@@ -37,8 +37,9 @@ app/                 Next.js routes. Server components read via lib/*, never cal
   api/notices/preview?event=  GET PDF from live data · api/notices/sample?fine=  GET layout check
   api/recurring      POST schedule due recurring fines
   api/fines/report?format=xlsx|csv · api/fines/sent POST · api/fines/[id] PATCH include|status
+  api/admin/settings PATCH · api/admin/rules/[id] PATCH · api/admin/steps/[id] PATCH · api/admin/users POST
   page.jsx           dashboard          violations/ properties/ approvals/ fines/ admin/
-components/          Sidebar, ActingAs, RosterImport, NewViolationForm, ApprovalCard, MarkCompliant, FinesQueue
+components/          Sidebar, ActingAs, RosterImport, NewViolationForm, ApprovalCard, MarkCompliant, FinesQueue, AdminConfig
 lib/
   schema.js          TABS: every sheet tab + exact headers; enums; PERMISSIONS + can()
   seed.js            nine rules and their steps, first user, HOA settings — written once by sheets:init
@@ -60,6 +61,7 @@ lib/
   letter-sample.js   clearly-marked sample data for /api/notices/sample
   recurring.js       planRecurringFines (pure) · runRecurringFines — runs on dashboard load
   fines.js           PM queue: joinFines, report rows/xlsx/csv, include toggle, sent, PM status
+  admin.js           loadAdmin, updateSetting/updateRule/updateStep/saveUser — audited config edits
 scripts/
   google-authorize.mjs   one-time refresh-token flow
   init-sheets.mjs        create tabs, verify headers, seed empty config tabs
@@ -157,7 +159,7 @@ Push `dev` → Vercel preview; merge to `main` → production. Env vars listed i
 must be set for Production, Preview, and Development.
 
 ## Build phases (spec BUILD SEQUENCE)
-1 ✅ schema, roles, acting-as · 2 ✅ roster import + ownership · 3 ✅ rules config + engine ·
+1 ✅ schema, roles, acting-as · 2 ✅ roster import + ownership · 3 ✅ (+ admin UI) rules config + engine ·
 4 ✅ violation submission + dashboard · 5 ✅ approval workflow · 6 ✅ warning PDF ·
 7 Drive · 8 Gmail · 9 ✅ compliance + recurring fines · 10 ✅ PM reporting (send-by-email pending Gmail) · 11 audit/security/tests ·
 12 final-warning template. Template field map is in `lib/letter.js`; the received "Final Notice
