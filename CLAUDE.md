@@ -31,8 +31,9 @@ language.** Unknowns are seeded as `NEEDS_BOARD_INPUT` and tracked in `docs/TODO
 app/                 Next.js routes. Server components read via lib/*, never call Google directly
   api/health         config check      api/acting-as   pre-go-live user picker
   api/roster         POST multipart file, mode=preview|apply (Board Admin only)
+  api/violations     POST submit · api/violations/determine POST preview (can 'submit')
   page.jsx           dashboard          violations/ properties/ approvals/ fines/ admin/
-components/          Sidebar (role-filtered nav), ActingAs
+components/          Sidebar (role-filtered nav), ActingAs, RosterImport, NewViolationForm
 lib/
   schema.js          TABS: every sheet tab + exact headers; enums; PERMISSIONS + can()
   seed.js            nine rules and their steps, first user, HOA settings — written once by sheets:init
@@ -46,6 +47,7 @@ lib/
   roster.js          parseRoster + planRosterImport — pure, tested
   roster-import.js   xlsx → previewRoster / applyRoster (writeSteps)
   properties.js      loadProperties / loadProperty joined with owners, ownerships, cases
+  violations.js      buildDetermination (pure) · submitViolation (writeSteps) · loadViolation(s)
 scripts/
   google-authorize.mjs   one-time refresh-token flow
   init-sheets.mjs        create tabs, verify headers, seed empty config tabs
@@ -93,6 +95,11 @@ select the offense level. Key behaviours (all under test):
   demand an override with a reason.
 - Recurring fines schedule only when `recurrence_days` is set and no fine is already pending.
 
+### One open case per rule and ownership
+A new observation while a case for the same rule and owner is OPEN progresses that case (next
+step, new PENDING event, offense/deadline restated, observation appended to the description)
+rather than opening a second case. Only confirmed compliance closes it and resets the count.
+
 ### Every enforcement action needs Board approval before anything leaves the building
 No email is sent on submission. Events are created `PENDING_BOARD_APPROVAL`; approval
 generates the PDF → Drive → Gmail → NOTICES row with message id. Recurring fines also enter
@@ -133,6 +140,6 @@ must be set for Production, Preview, and Development.
 
 ## Build phases (spec BUILD SEQUENCE)
 1 ✅ schema, roles, acting-as · 2 ✅ roster import + ownership · 3 ✅ rules config + engine ·
-4 violation submission + dashboard (dashboard ✅) · 5 approval workflow · 6 warning PDF ·
+4 ✅ violation submission + dashboard · 5 approval workflow · 6 warning PDF ·
 7 Drive · 8 Gmail · 9 compliance + recurring fines · 10 PM reporting · 11 audit/security/tests ·
 12 final-warning template. Inspect `docs/templates/*.pdf` and map every field before Phase 6.

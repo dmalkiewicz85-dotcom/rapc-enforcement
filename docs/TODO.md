@@ -38,6 +38,11 @@ Items the app cannot proceed on without a decision or data. Nothing here is gues
 All of these are seeded as `NEEDS_BOARD_INPUT` and the letter engine will refuse to generate a
 notice while any required one is still a placeholder.
 
+## Roles
+- **ARC scope.** The spec says ARC members submit "ARC-related violations" but does not say
+  which of the nine rules those are. Today ARC members can submit any rule. If the Board wants
+  a restriction, name the rules and it becomes a column on VIOLATION_RULES.
+
 ## Rule details the Enforcement Guide leaves unstated
 - Noise (RULE-001): no compliance deadline given for any step. Deadline will be required as an
   override on every noise notice until the Board sets `default_deadline_days`.
