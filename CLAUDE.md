@@ -35,8 +35,10 @@ app/                 Next.js routes. Server components read via lib/*, never cal
   api/events/[id]/decide        POST {action, reason, fineAmount?, deadline?, stepNumber?}
   api/violations/[id]/compliance POST {notes} — Mark Compliant
   api/notices/preview?event=  GET PDF from live data · api/notices/sample?fine=  GET layout check
+  api/recurring      POST schedule due recurring fines
+  api/fines/report?format=xlsx|csv · api/fines/sent POST · api/fines/[id] PATCH include|status
   page.jsx           dashboard          violations/ properties/ approvals/ fines/ admin/
-components/          Sidebar, ActingAs, RosterImport, NewViolationForm, ApprovalCard, MarkCompliant
+components/          Sidebar, ActingAs, RosterImport, NewViolationForm, ApprovalCard, MarkCompliant, FinesQueue
 lib/
   schema.js          TABS: every sheet tab + exact headers; enums; PERMISSIONS + can()
   seed.js            nine rules and their steps, first user, HOA settings — written once by sheets:init
@@ -56,6 +58,8 @@ lib/
   letter.js          buildLetterModel — pure; refuses while any input is NEEDS_BOARD_INPUT
   pdf.js             renderNoticePdf — pdf-lib reproduction of the template, 2 pages
   letter-sample.js   clearly-marked sample data for /api/notices/sample
+  recurring.js       planRecurringFines (pure) · runRecurringFines — runs on dashboard load
+  fines.js           PM queue: joinFines, report rows/xlsx/csv, include toggle, sent, PM status
 scripts/
   google-authorize.mjs   one-time refresh-token flow
   init-sheets.mjs        create tabs, verify headers, seed empty config tabs
@@ -155,6 +159,6 @@ must be set for Production, Preview, and Development.
 ## Build phases (spec BUILD SEQUENCE)
 1 ✅ schema, roles, acting-as · 2 ✅ roster import + ownership · 3 ✅ rules config + engine ·
 4 ✅ violation submission + dashboard · 5 ✅ approval workflow · 6 ✅ warning PDF ·
-7 Drive · 8 Gmail · 9 compliance ✅ + recurring fines · 10 PM reporting · 11 audit/security/tests ·
+7 Drive · 8 Gmail · 9 ✅ compliance + recurring fines · 10 ✅ PM reporting (send-by-email pending Gmail) · 11 audit/security/tests ·
 12 final-warning template. Template field map is in `lib/letter.js`; the received "Final Notice
 Before Collections" PDF is a dues letter, not a violation final warning (TODO item G).

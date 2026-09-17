@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { googleConfigStatus } from '@/lib/google'
 import { loadDashboard } from '@/lib/dashboard'
+import { runRecurringFines } from '@/lib/recurring'
 import { formatDate } from '@/lib/time'
 import { ordinal } from '@/lib/format'
 
@@ -9,6 +10,11 @@ export const dynamic = 'force-dynamic'
 export default async function Dashboard() {
   const { configured, missing } = googleConfigStatus()
   if (!configured) return <NotConfigured missing={missing} />
+
+  // Recurring fines that have come due enter PENDING here (idempotent); a
+  // failure to schedule must not take the dashboard down.
+  let scheduleError
+  try { await runRecurringFines() } catch (e) { scheduleError = e.message }
 
   let data, error
   try { data = await loadDashboard() } catch (e) { error = e.message }
@@ -30,6 +36,12 @@ export default async function Dashboard() {
         <h1 className="text-2xl font-semibold uppercase tracking-wide">Reserves at Park Creek Enforcement</h1>
         <Link href="/violations/new" className="btn-primary">New Violation</Link>
       </div>
+
+      {scheduleError && (
+        <p className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          Recurring-fine check failed: {scheduleError}
+        </p>
+      )}
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
         {CARDS.map(([label, n, href]) => (

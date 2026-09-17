@@ -33,11 +33,14 @@ Items the app cannot proceed on without a decision or data. Nothing here is gues
   Company®" under the response form — only printed if set)
 - E. Manager signature and/or logo image → Drive, IDs into `HOA_SETTINGS`
 - F. Property Management recipient email for PM reports → `HOA_SETTINGS.pm_report_recipient_email`
-- G. Final-warning template — the file received (`TEMPLATE - IRM Final Notice Before Collections.pdf`)
-  is a **dues-collection letter** ([TotalAmountDue], [AccountNumber], payment methods), not a
-  violation final warning, so it cannot be mapped. Until the Board supplies a violation
-  final-warning letter, FINAL_WARNING renders on the standard notice layout.
-- H. Approved email subject and body → `HOA_SETTINGS.notice_email_subject/body`
+- G. Final-warning template — **decision (Sept 2026): one letter for all offense levels.**
+  FINAL_WARNING renders on the standard notice layout with the fine box marked. The Board may
+  later add offense-specific wording to the *email body* (`notice_email_body` — see H) or modify
+  the letter; tracked here, not built. (The "Final Notice Before Collections" file received is a
+  dues letter and is not used.)
+- H. Approved email subject and body → `HOA_SETTINGS.notice_email_subject/body`. Placeholders
+  available: {owner_name} {property_address} {rule_name} {offense} {action} {deadline} {fine}
+  {case_number} {hoa_name}. Offense-specific verbiage can go here rather than in the letter.
 - I. Extra placeholders found in the final-warning template (inspect in Phase 12)
 
 ## Approved letter text that conflicts with configuration (Board to resolve)
