@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { loadViolation } from '@/lib/violations'
+import { currentUser } from '@/lib/current-user'
+import { can } from '@/lib/schema'
+import MarkCompliant from '@/components/MarkCompliant'
 import { formatDate, formatDateTime } from '@/lib/time'
 import { ordinal, money } from '@/lib/format'
 
@@ -15,8 +18,9 @@ const EVENT_STATUS = {
 
 export default async function Page({ params }) {
   const { id } = await params
-  const v = await loadViolation(id)
+  const [v, user] = await Promise.all([loadViolation(id), currentUser()])
   if (!v) notFound()
+  const pendingCount = v.events.filter(e => e.status === 'PENDING_BOARD_APPROVAL').length
 
   return (
     <div className="space-y-6">
@@ -29,8 +33,9 @@ export default async function Page({ params }) {
             {' · '}{v.rule?.name ?? v.rule_id}
           </div>
         </div>
-        <div className="text-right text-sm">
+        <div className="flex flex-col items-end gap-2 text-sm">
           <Badge status={v.status === 'CLOSED' ? 'CLOSED' : v.pendingEvent ? 'PENDING' : v.overdueDays > 0 ? 'OVERDUE' : 'OPEN'} days={v.overdueDays} compliant={v.compliance_status === 'COMPLIANT'} />
+          {v.status === 'OPEN' && can(user, 'mark_compliant') && <MarkCompliant violationId={v.id} pendingCount={pendingCount} />}
         </div>
       </div>
 
@@ -101,9 +106,9 @@ export default async function Page({ params }) {
             </tbody>
           </table>
         </div>
-        {v.pendingEvent && (
+        {v.pendingEvent && can(user, 'approve_enforcement') && (
           <p className="mt-2 text-sm text-ink-600">
-            Board actions (approve, edit deadline, override, reject) arrive with the approval workflow — see <Link href="/approvals" className="underline">Board Approvals</Link>.
+            Step {v.pendingEvent.step_number} is waiting on the Board — <Link href="/approvals" className="underline">review it on Board Approvals</Link>.
           </p>
         )}
       </section>

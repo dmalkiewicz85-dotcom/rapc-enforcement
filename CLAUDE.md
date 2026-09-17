@@ -32,8 +32,10 @@ app/                 Next.js routes. Server components read via lib/*, never cal
   api/health         config check      api/acting-as   pre-go-live user picker
   api/roster         POST multipart file, mode=preview|apply (Board Admin only)
   api/violations     POST submit · api/violations/determine POST preview (can 'submit')
+  api/events/[id]/decide        POST {action, reason, fineAmount?, deadline?, stepNumber?}
+  api/violations/[id]/compliance POST {notes} — Mark Compliant
   page.jsx           dashboard          violations/ properties/ approvals/ fines/ admin/
-components/          Sidebar (role-filtered nav), ActingAs, RosterImport, NewViolationForm
+components/          Sidebar, ActingAs, RosterImport, NewViolationForm, ApprovalCard, MarkCompliant
 lib/
   schema.js          TABS: every sheet tab + exact headers; enums; PERMISSIONS + can()
   seed.js            nine rules and their steps, first user, HOA settings — written once by sheets:init
@@ -48,6 +50,8 @@ lib/
   roster-import.js   xlsx → previewRoster / applyRoster (writeSteps)
   properties.js      loadProperties / loadProperty joined with owners, ownerships, cases
   violations.js      buildDetermination (pure) · submitViolation (writeSteps) · loadViolation(s)
+  approvals.js       planDecision / planCompliance (pure, tested) · decideEvent / confirmCompliance
+  notices.js         afterApproval() — the seam Phases 6–8 fill (PDF → Drive → Gmail → NOTICES)
 scripts/
   google-authorize.mjs   one-time refresh-token flow
   init-sheets.mjs        create tabs, verify headers, seed empty config tabs
@@ -101,6 +105,12 @@ step, new PENDING event, offense/deadline restated, observation appended to the 
 rather than opening a second case. Only confirmed compliance closes it and resets the count.
 
 ### Every enforcement action needs Board approval before anything leaves the building
+Board decisions go through `planDecision`: plain approve; edit deadline, modify fine, or override
+to another *configured* step of the same rule (each needs a reason, each is audited); reject
+(reason required — a fresh case is CLOSED and returned to the submitter, a rejected progression
+drops the case back to its last approved step). Overrides can only pick steps that exist in
+RULE_ENFORCEMENT_STEPS — the Board never types an action or an amount that isn't configured,
+except a fine modification, which is audited as FINE_MODIFIED.
 No email is sent on submission. Events are created `PENDING_BOARD_APPROVAL`; approval
 generates the PDF → Drive → Gmail → NOTICES row with message id. Recurring fines also enter
 pending. Owner with no email → `MANUAL_DELIVERY_REQUIRED`. Gmail failure → `EMAIL_FAILED` +
@@ -140,6 +150,6 @@ must be set for Production, Preview, and Development.
 
 ## Build phases (spec BUILD SEQUENCE)
 1 ✅ schema, roles, acting-as · 2 ✅ roster import + ownership · 3 ✅ rules config + engine ·
-4 ✅ violation submission + dashboard · 5 approval workflow · 6 warning PDF ·
-7 Drive · 8 Gmail · 9 compliance + recurring fines · 10 PM reporting · 11 audit/security/tests ·
+4 ✅ violation submission + dashboard · 5 ✅ approval workflow · 6 warning PDF ·
+7 Drive · 8 Gmail · 9 compliance ✅ + recurring fines · 10 PM reporting · 11 audit/security/tests ·
 12 final-warning template. Inspect `docs/templates/*.pdf` and map every field before Phase 6.
