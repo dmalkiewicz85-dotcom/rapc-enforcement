@@ -5,7 +5,8 @@ import { currentUser } from '@/lib/current-user'
 import { can } from '@/lib/schema'
 import MarkCompliant from '@/components/MarkCompliant'
 import NoticeActions from '@/components/NoticeActions'
-import { formatDate, formatDateTime } from '@/lib/time'
+import Appeals from '@/components/Appeals'
+import { formatDate, formatDateTime, todayISO } from '@/lib/time'
 import { ordinal, money } from '@/lib/format'
 
 export const dynamic = 'force-dynamic'
@@ -161,6 +162,8 @@ export default async function Page({ params }) {
           </section>
         </div>
       )}
+
+      <Appeals violationId={v.id} appeals={v.appeals} canRecord={can(user, 'review')} canDecide={approver} today={todayISO()} />
 
       <section>
         <h2 className="text-lg font-semibold mb-3">Audit trail</h2>

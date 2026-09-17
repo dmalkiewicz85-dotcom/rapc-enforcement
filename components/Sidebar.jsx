@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import clsx from 'clsx'
 import {
-  LayoutDashboard, FilePlus, ListChecks, Home, Gavel, Receipt, Settings, Menu, X,
+  LayoutDashboard, FilePlus, ListChecks, Home, Gavel, Receipt, Settings, ScrollText, Menu, X,
 } from 'lucide-react'
 import { can } from '@/lib/schema'
 
@@ -16,6 +16,7 @@ const NAV = [
   { label: 'Properties',      icon: Home,            href: '/properties' },
   { label: 'Board Approvals', icon: Gavel,           href: '/approvals',      perm: 'approve_enforcement' },
   { label: 'Fines / PM',      icon: Receipt,         href: '/fines',          perm: 'pm_reports' },
+  { label: 'Audit Log',       icon: ScrollText,      href: '/audit',          perm: 'view_history' },
   { label: 'Admin',           icon: Settings,        href: '/admin',          perm: 'manage_settings' },
 ]
 

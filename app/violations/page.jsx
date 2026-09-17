@@ -15,7 +15,7 @@ const STATUS_LABEL = v => {
 
 export default async function Page({ searchParams }) {
   const sp = await searchParams
-  const filters = { status: sp.status ?? '', ruleId: sp.rule ?? '', q: sp.q ?? '', overdue: sp.overdue === '1', offense: sp.offense ?? '' }
+  const filters = { status: sp.status ?? '', ruleId: sp.rule ?? '', q: sp.q ?? '', overdue: sp.overdue === '1', offense: sp.offense ?? '', appeals: sp.appeals === '1' }
   const { configured } = googleConfigStatus()
   if (!configured) return <p className="text-sm text-ink-500">Google connection not configured.</p>
 

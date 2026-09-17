@@ -40,8 +40,8 @@ app/                 Next.js routes. Server components read via lib/*, never cal
   api/fines/email    POST — email the PM report from the HOA account and mark SENT_TO_PM
   api/fines/report?format=xlsx|csv · api/fines/sent POST · api/fines/[id] PATCH include|status
   api/admin/settings PATCH · api/admin/rules/[id] PATCH · api/admin/steps/[id] PATCH · api/admin/users POST
-  page.jsx           dashboard          violations/ properties/ approvals/ fines/ admin/
-components/          Sidebar, ActingAs, RosterImport, NewViolationForm, ApprovalCard, MarkCompliant, FinesQueue, AdminConfig, NoticeActions
+  page.jsx           dashboard          violations/ properties/ approvals/ fines/ audit/ admin/
+components/          Sidebar, ActingAs, RosterImport, NewViolationForm, ApprovalCard, MarkCompliant, FinesQueue, AdminConfig, NoticeActions, Appeals
 lib/
   schema.js          TABS: every sheet tab + exact headers; enums; PERMISSIONS + can()
   seed.js            nine rules and their steps, first user, HOA settings — written once by sheets:init
@@ -66,6 +66,7 @@ lib/
   recurring.js       planRecurringFines (pure) · runRecurringFines — runs on dashboard load
   fines.js           PM queue: joinFines, report rows/xlsx/csv, include toggle, sent, PM status
   admin.js           loadAdmin, updateSetting/updateRule/updateStep/saveUser — audited config edits
+  appeals.js         recordAppeal / updateAppeal (manual, no homeowner portal)
 scripts/
   google-authorize.mjs   one-time refresh-token flow
   init-sheets.mjs        create tabs, verify headers, seed empty config tabs
@@ -167,6 +168,6 @@ must be set for Production, Preview, and Development.
 ## Build phases (spec BUILD SEQUENCE)
 1 ✅ schema, roles, acting-as · 2 ✅ roster import + ownership · 3 ✅ (+ admin UI) rules config + engine ·
 4 ✅ violation submission + dashboard · 5 ✅ approval workflow · 6 ✅ warning PDF ·
-7 ✅ Drive · 8 ✅ Gmail (both written, **not yet exercised against a real account**) · 9 ✅ compliance + recurring fines · 10 ✅ PM reporting · 11 audit/security/tests ·
-12 final-warning template. Template field map is in `lib/letter.js`; the received "Final Notice
+7 ✅ Drive · 8 ✅ Gmail (both written, **not yet exercised against a real account**) · 9 ✅ compliance + recurring fines · 10 ✅ PM reporting · 11 audit log ✅ (security = go-live login, TODO #7) ·
+12 final-warning template — **decided: single letter for all levels** (TODO G). Template field map is in `lib/letter.js`; the received "Final Notice
 Before Collections" PDF is a dues letter, not a violation final warning (TODO item G).
