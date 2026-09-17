@@ -154,7 +154,7 @@ must be set for Production, Preview, and Development.
 
 ## Build phases (spec BUILD SEQUENCE)
 1 ✅ schema, roles, acting-as · 2 ✅ roster import + ownership · 3 ✅ rules config + engine ·
-4 ✅ violation submission + dashboard · 5 ✅ approval workflow · 6 warning PDF ·
+4 ✅ violation submission + dashboard · 5 ✅ approval workflow · 6 ✅ warning PDF ·
 7 Drive · 8 Gmail · 9 compliance ✅ + recurring fines · 10 PM reporting · 11 audit/security/tests ·
 12 final-warning template. Template field map is in `lib/letter.js`; the received "Final Notice
 Before Collections" PDF is a dues letter, not a violation final warning (TODO item G).
